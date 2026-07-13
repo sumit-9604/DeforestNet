@@ -197,7 +197,7 @@ class DataIngestionService:
                     "sql": (
                         "SELECT longitude, latitude, gfw_integrated_alerts__date, "
                         "gfw_integrated_alerts__intensity, gfw_integrated_alerts__confidence "
-                        "FROM results WHERE gfw_integrated_alerts__date >= '2026-06-01'"
+                        "FROM results WHERE gfw_integrated_alerts__date >= '2026-06-01' AND gfw_integrated_alerts__confidence = 'high'"
                     ),
                     "geometry": geometry
                 }

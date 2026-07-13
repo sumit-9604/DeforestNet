@@ -1,3 +1,5 @@
+import geopandas as gpd
+from shapely.geometry import Point
 from sqlalchemy import and_
 from datetime import datetime, timedelta
 from backend.utils.geo_utils import check_intersection_with_protected_areas
