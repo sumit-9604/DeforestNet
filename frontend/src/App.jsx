@@ -1,59 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Reports from './components/Reports';
-import Dashboard from './pages/Dashboard';
-import Alerts from './components/Alerts';
-import Report from './pages/Report';
-import { apiService } from './services/api';
+import React, { useState } from 'react';
+import { ShieldCheck, LayoutDashboard, Search, Satellite, FileText } from 'lucide-react';
+import StatusBar from './components/StatusBar.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import Investigate from './components/Investigate.jsx';
+import Fleet from './components/Fleet.jsx';
+import Reports from './components/Reports.jsx';
+
+const TABS = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, Comp: Dashboard },
+  { key: 'investigate', label: 'Investigate', icon: Search, Comp: Investigate },
+  { key: 'fleet', label: 'Fleet', icon: Satellite, Comp: Fleet },
+  { key: 'reports', label: 'Reports', icon: FileText, Comp: Reports },
+];
+
+function Brand() {
+  return (
+    <div className="fg-brand">
+      <div className="fg-brand-icon"><ShieldCheck size={18} /></div>
+      <div className="fg-brand-text">
+        <h1>FOREST<span>GUARD</span></h1>
+        <p>Cyber-Surveillance · Agentic AI</p>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('map');
-  const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch initial alerts on mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await apiService.getAlerts();
-        setAlerts(data);
-      } catch (err) {
-        console.error("Failed to load alerts:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  // View router based on active tab
-  const renderView = () => {
-    switch (activeTab) {
-      case 'map':
-        return <Home alerts={alerts} setAlerts={setAlerts} onNavigate={setActiveTab} />;
-      case 'vault':
-        return <Reports alerts={alerts} />;
-      case 'logs':
-        return <Dashboard />;
-      case 'fleet':
-        return <Alerts />;
-      case 'portal':
-        return <Report />;
-      default:
-        return <Home alerts={alerts} setAlerts={setAlerts} onNavigate={setActiveTab} />;
-    }
-  };
+  const [tab, setTab] = useState('dashboard');
+  const Active = TABS.find((t) => t.key === tab).Comp;
 
   return (
-    <div className="min-h-screen bg-[#050b0c] text-white flex flex-col justify-between selection:bg-cyan-500/35 selection:text-white">
-      {/* Scrollable Container */}
-      <main className="flex-1 w-full relative">
-        {renderView()}
-      </main>
+    <div className="fg-app">
+      <div className="fg-layout">
+        <aside className="fg-sidebar">
+          <Brand />
+          <nav className="fg-sidebar-nav">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  className={`fg-sidebar-item ${tab === t.key ? 'active' : ''}`}
+                  onClick={() => setTab(t.key)}
+                >
+                  <Icon size={18} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
+          <div className="fg-sidebar-foot mono">v1.0.0 · build 2026.07</div>
+        </aside>
 
-      {/* Cyber Bottom Navigation Bar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="fg-main">
+          <header className="fg-topbar">
+            <div className="fg-topbar-brand"><Brand /></div>
+            <StatusBar />
+          </header>
+
+          <div className="fg-content">
+            <Active />
+          </div>
+
+          <nav className="fg-nav">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  className={`fg-nav-item ${tab === t.key ? 'active' : ''}`}
+                  onClick={() => setTab(t.key)}
+                >
+                  <Icon size={19} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
     </div>
   );
 }
