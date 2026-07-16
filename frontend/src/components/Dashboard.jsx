@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, AlertTriangle, Satellite, Database, Flame } from 'lucide-react';
 import RingProgress from './RingProgress.jsx';
 import LiveConsole from './LiveConsole.jsx';
 
-const TASKS = [
+const BASE_TASKS = [
   {
     id: '0x4F7B2A1E',
     name: 'Analyzing Sentinel-2 spectral data',
@@ -76,23 +76,52 @@ function TaskCard({ task }) {
   );
 }
 
-export default function Dashboard() {
+export default function Dashboard({ alerts = [], stats = null, activity = [] }) {
+  // Try to find the latest critical/high alert to show in the header banner
+  const activeAlert = alerts.find(a => a.risk_level === 'Critical' || a.risk_level === 'High') || alerts[0];
+
   return (
     <div>
-      <div className="fg-alert-banner fg-fade-in">
-        <div className="icon"><AlertTriangle size={18} /></div>
-        <div className="txt">
-          <div className="eyebrow">Critical Alert</div>
-          <div className="title">Illegal logging detected · Sector 7G</div>
+      {activeAlert && (
+        <div className="fg-alert-banner fg-fade-in" style={{ borderColor: activeAlert.risk_level === 'Critical' ? 'var(--alert)' : 'var(--amber)' }}>
+          <div className="icon" style={{ color: activeAlert.risk_level === 'Critical' ? 'var(--alert)' : 'var(--amber)' }}>
+            <AlertTriangle size={18} />
+          </div>
+          <div className="txt">
+            <div className="eyebrow" style={{ color: activeAlert.risk_level === 'Critical' ? 'var(--alert)' : 'var(--amber)' }}>
+              {activeAlert.risk_level} Alert
+            </div>
+            <div className="title">
+              {activeAlert.status} anomaly · Lat {activeAlert.latitude.toFixed(4)}, Lon {activeAlert.longitude.toFixed(4)}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Grid of Aggregated Stats */}
+      {stats && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, margin: '0 14px 20px' }}>
+          <div className="fg-panel" style={{ padding: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--font-ui)' }}>Total Alerts</div>
+            <div style={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--mint)', marginTop: 4 }}>{stats.metrics.total_alerts}</div>
+          </div>
+          <div className="fg-panel" style={{ padding: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--font-ui)' }}>Area Affected</div>
+            <div style={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--mint)', marginTop: 4 }}>{stats.metrics.verified_area_lost_ha} <span style={{ fontSize: 10 }}>ha</span></div>
+          </div>
+          <div className="fg-panel" style={{ padding: 10, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--font-ui)' }}>Resolved Reports</div>
+            <div style={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--mint)', marginTop: 4 }}>{stats.metrics.resolved_reports}</div>
+          </div>
+        </div>
+      )}
 
       <div className="fg-page-title">Task Execution Log</div>
       <div className="fg-grid">
-        {TASKS.map((t) => <TaskCard key={t.id} task={t} />)}
+        {BASE_TASKS.map((t) => <TaskCard key={t.id} task={t} />)}
       </div>
 
-      <LiveConsole />
+      <LiveConsole lines={activity.map(a => `${a.timestamp.slice(11, 19)} - ${a.message}`)} />
     </div>
   );
 }
