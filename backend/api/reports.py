@@ -7,6 +7,7 @@ from typing import List
 from backend.database.database import get_db
 from backend.models.report import Report, ReportResponse
 from backend.utils.logger import setup_logger
+from backend.config import REPORTS_DIR
 
 logger = setup_logger("api_reports")
 router = APIRouter()
@@ -24,9 +25,16 @@ def download_pdf_report(report_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Report not found")
         
     pdf_path = report.file_path
+    
+    # Check if file exists locally. If not, resolve the file's basename inside the local REPORTS_DIR
     if not os.path.exists(pdf_path):
-        logger.error(f"Report file missing on disk: {pdf_path}")
-        raise HTTPException(status_code=404, detail="PDF report file does not exist on disk")
+        filename = os.path.basename(pdf_path.replace("\\", "/"))
+        local_path = REPORTS_DIR / filename
+        if local_path.exists():
+            pdf_path = str(local_path)
+        else:
+            logger.error(f"Report file missing on disk: {pdf_path} (Also checked local fallback: {local_path})")
+            raise HTTPException(status_code=404, detail="PDF report file does not exist on disk")
         
     # Return FileResponse to trigger browser download/preview
     filename = os.path.basename(pdf_path)
