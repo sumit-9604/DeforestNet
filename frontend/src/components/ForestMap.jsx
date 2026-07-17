@@ -86,6 +86,20 @@ export default function ForestMap({ alerts = [], stats = null }) {
       })
     : BREACHES;
 
+  let regionName = "AMAZON WILDLIFE RESERVE";
+  let coordLabel = "3.46° S, 62.21° W";
+  
+  if (alerts.length > 0) {
+    const firstAlert = alerts[0];
+    if (firstAlert.longitude > 100) {
+      regionName = "KALIMANTAN RESERVE FOREST";
+      coordLabel = "1.25° S, 116.89° E";
+    } else {
+      regionName = "AMAZON WILDLIFE RESERVE";
+      coordLabel = "3.46° S, 62.21° W";
+    }
+  }
+
   let avgConfidence = 98.4;
   if (alerts.length > 0) {
     const confidences = alerts.map(a => {
@@ -165,6 +179,33 @@ export default function ForestMap({ alerts = [], stats = null }) {
         {/* 3D Visual HUD Overlays */}
         <div className="dfn-map-grid-overlay" />
         <div className="hud-scanner" />
+
+        {/* Floating Location Overlay */}
+        <div 
+          className="hud-glass"
+          style={{
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            padding: '6px 12px',
+            borderRadius: 4,
+            borderLeft: '2px solid var(--mint)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 9,
+            color: 'var(--mint)',
+            letterSpacing: '1px',
+            transform: 'translate3d(0, 0, 35px)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            pointerEvents: 'none',
+            zIndex: 20
+          }}
+        >
+          <span style={{ opacity: 0.6 }}>LOC:</span>
+          <span style={{ fontWeight: 'bold' }}>{regionName}</span>
+          <span style={{ fontSize: 8, opacity: 0.5 }}>[{coordLabel}]</span>
+        </div>
 
         {breaches.map((b) => <BreachMarker key={b.id || b.label} {...b} />)}
 
