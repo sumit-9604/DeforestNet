@@ -27,7 +27,7 @@ class AgentPlanner:
         if self.provider == "mock":
             return self._decide_mock_state_machine(memory, db)
         else:
-            return self._decide_llm(memory)
+            return self._decide_llm(memory, db)
 
     def _decide_mock_state_machine(self, memory, db) -> dict:
         """Deterministic state machine implementing the exact workflow of the PRD"""
@@ -435,7 +435,7 @@ class AgentPlanner:
             "finished": True
         }
 
-    def _decide_llm(self, memory) -> dict:
+    def _decide_llm(self, memory, db=None) -> dict:
         """Call LLM provider for planning decisions"""
         # Format the planner prompt
         prompt = PLANNER_PROMPT_TEMPLATE.format(
@@ -459,14 +459,17 @@ class AgentPlanner:
         if not response_text:
             logger.warning("LLM API failed. Falling back to rule-based state machine.")
             # For runtime robustness, fallback to mock state machine
-            # But we need db session, so we can't easily fallback inside _decide_llm without db.
-            # We'll return an error dict or finished. Let's return error.
+            if db is not None:
+                return self._decide_mock_state_machine(memory, db)
             return {"error": "LLM planning call failed and no database context provided for fallback."}
 
         try:
             return self._parse_llm_json(response_text)
         except Exception as e:
             logger.error(f"Failed to parse LLM planning response: {e}. Raw response: {response_text}")
+            if db is not None:
+                logger.warning("Parsing failed. Falling back to rule-based state machine.")
+                return self._decide_mock_state_machine(memory, db)
             return {"error": f"LLM returned invalid JSON: {str(e)}"}
 
     def _parse_llm_json(self, text: str) -> dict:
@@ -481,7 +484,7 @@ class AgentPlanner:
         return json.loads(text)
 
     def _call_gemini_api(self, prompt: str) -> str:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{
