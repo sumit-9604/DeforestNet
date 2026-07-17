@@ -59,6 +59,30 @@ def update_alert_status(alert_id: int, payload: AlertUpdateStatus, db: Session =
     if payload.risk_level:
         alert.risk_level = payload.risk_level
         
+    # Trigger real email/receipt notifications upon manual authorization
+    if payload.status in ["Authorized", "Reported"]:
+        report = db.query(Report).filter(Report.alert_id == alert.id).first()
+        if report:
+            import os
+            from backend.config import REPORTS_DIR
+            notifier = NotificationService()
+            pdf_path = report.file_path
+            
+            # Resolve cross-platform paths dynamically (Windows -> macOS path format)
+            if not os.path.exists(pdf_path):
+                filename = os.path.basename(pdf_path.replace("\\", "/"))
+                local_path = REPORTS_DIR / filename
+                if local_path.exists():
+                    pdf_path = str(local_path)
+            
+            sent = notifier.send_report_notification(
+                recipient_email=report.recipient_email,
+                alert_id=alert.id,
+                pdf_path=pdf_path
+            )
+            if sent:
+                alert.status = "Reported"
+        
     db.commit()
     db.refresh(alert)
     return alert
