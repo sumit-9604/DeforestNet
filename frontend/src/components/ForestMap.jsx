@@ -91,12 +91,39 @@ export default function ForestMap({ alerts = [], stats = null }) {
   
   if (alerts.length > 0) {
     const firstAlert = alerts[0];
-    if (firstAlert.longitude > 100) {
-      regionName = "KALIMANTAN RESERVE FOREST";
-      coordLabel = "1.25° S, 116.89° E";
-    } else {
-      regionName = "AMAZON WILDLIFE RESERVE";
-      coordLabel = "3.46° S, 62.21° W";
+    if (firstAlert.region && firstAlert.region.name) {
+      regionName = firstAlert.region.name.toUpperCase();
+      
+      try {
+        const geom = typeof firstAlert.region.geometry === 'string' 
+          ? JSON.parse(firstAlert.region.geometry) 
+          : firstAlert.region.geometry;
+          
+        if (geom && geom.type === "Polygon" && geom.coordinates && geom.coordinates[0]) {
+          const coords = geom.coordinates[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          // Polygon coordinates usually include the closing vertex, sum up all vertices
+          coords.forEach(pt => {
+            sumLon += pt[0];
+            sumLat += pt[1];
+          });
+          const avgLat = sumLat / coords.length;
+          const avgLon = sumLon / coords.length;
+          
+          const latStr = avgLat < 0 ? `${Math.abs(avgLat).toFixed(4)}° S` : `${avgLat.toFixed(4)}° N`;
+          const lonStr = avgLon < 0 ? `${Math.abs(avgLon).toFixed(4)}° W` : `${avgLon.toFixed(4)}° E`;
+          coordLabel = `${latStr}, ${lonStr}`;
+        }
+      } catch (e) {
+        console.error("Error parsing region geometry:", e);
+        // Fallback coordination checks
+        if (regionName.includes("KALIMANTAN") || regionName.includes("SOUTHEAST ASIA") || firstAlert.longitude > 100) {
+          coordLabel = "1.2500° S, 116.8900° E";
+        } else {
+          coordLabel = "3.4600° S, 62.2100° W";
+        }
+      }
     }
   }
 
