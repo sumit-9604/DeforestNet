@@ -62,7 +62,7 @@ Output JSON only, no markdown wrappers, no backticks, no other text.
     def _call_gemini_api(self, prompt: str, data: dict) -> dict:
         """Calls Gemini API using direct REST POST request"""
         logger.info("Calling Google Gemini API for alert analysis...")
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{

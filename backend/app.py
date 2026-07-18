@@ -50,15 +50,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
 # Register API Router
 app.include_router(api_router, prefix="/api")
 
-@app.get("/")
-def read_root():
-    """Welcome and metadata endpoint"""
-    return {
-        "app": "ForestGuard API Backend",
-        "status": "Online",
-        "sdg_alignment": ["SDG 13: Climate Action", "SDG 15: Life on Land"],
-        "api_docs": "/docs"
-    }
+# Serve Frontend static assets in production
+FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+
+if FRONTEND_DIST.exists():
+    # Mount assets folder for static scripts and CSS
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="static")
+
+    # Serve index.html for index and any catch-all routes to support client routing
+    @app.get("/")
+    async def serve_index():
+        return FileResponse(str(FRONTEND_DIST / "index.html"))
+
+    @app.get("/{catchall:path}")
+    async def serve_fallback(catchall: str):
+        # Ensure we don't intercept API endpoints or FastAPI docs
+        if catchall.startswith("api") or catchall.startswith("docs") or catchall.startswith("openapi.json"):
+            return None
+        return FileResponse(str(FRONTEND_DIST / "index.html"))
+else:
+    @app.get("/")
+    def read_root():
+        """Welcome and metadata endpoint (dev fallback)"""
+        return {
+            "app": "ForestGuard API Backend",
+            "status": "Online",
+            "sdg_alignment": ["SDG 13: Climate Action", "SDG 15: Life on Land"],
+            "api_docs": "/docs"
+        }
+
