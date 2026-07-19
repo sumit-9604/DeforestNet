@@ -7,16 +7,20 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
   const [isCompiling, setIsCompiling] = useState(false);
   const [sentMap, setSentMap] = useState({});
   const [compileStatus, setCompileStatus] = useState('');
+  const [authorizationError, setAuthorizationError] = useState('');
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [humanOversight, setHumanOversight] = useState(true);
 
   const activeReport = reports[activeReportIdx] || null;
 
   // Handle triggering a live pipeline check
   const handleTriggerCheck = async () => {
     try {
+      setHumanOversight(true);
       setIsCompiling(true);
       setCompileStatus('Retrieving alerts from GFW...');
       
-      const res = await apiService.triggerCheck("Amazon Wildlife Reserve");
+      const res = await apiService.triggerCheck("Amazon Wildlife Reserve", true);
       console.log("Pipeline run complete:", res);
       
       setCompileStatus('Compiling evidence packages...');
@@ -37,14 +41,22 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
   };
 
   const handleAuthorize = async (reportId) => {
-    setSentMap(prev => ({ ...prev, [reportId]: true }));
-    if (activeReport && activeReport.alert_id) {
-      try {
-        await apiService.updateAlertStatus(activeReport.alert_id, "Authorized");
-        if (onRefresh) onRefresh();
-      } catch (err) {
-        console.error("Failed to authorize report:", err);
-      }
+    if (!activeReport?.alert_id) {
+      setAuthorizationError('Select a generated evidence report before authorizing delivery.');
+      return;
+    }
+
+    setAuthorizationError('');
+    setIsAuthorizing(true);
+    try {
+      await apiService.updateAlertStatus(activeReport.alert_id, "Authorized");
+      setSentMap(prev => ({ ...prev, [reportId]: true }));
+      if (onRefresh) await onRefresh();
+    } catch (err) {
+      console.error("Failed to authorize report:", err);
+      setAuthorizationError(err.message || 'Unable to authorize the notification.');
+    } finally {
+      setIsAuthorizing(false);
     }
   };
 
@@ -79,7 +91,7 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
       id: activeReport.id,
       incidentId: `REPORT-00${activeReport.id}`,
       location: `Lat ${alert.latitude?.toFixed(4) || '-3.525'}, Lon ${alert.longitude?.toFixed(4) || '-62.284'}`,
-      agentName: 'FORESTGUARD-GEMINI-2.0',
+      agentName: 'DEFORESTNET-GEMINI-2.0',
       summary: [
         `Verified forest cover loss of ${alert.area_ha || 0.1} hectares.`,
         isProtected ? `Location inside protected boundary of ${paName}.` : `Location outside protected boundaries.`,
@@ -94,7 +106,7 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
     };
   }
 
-  const isSent = activeReport ? sentMap[activeReport.id] : false;
+  const isSent = activeReport ? (sentMap[activeReport.id] || activeReport.status === 'Sent') : false;
 
   return (
     <div>
@@ -129,6 +141,15 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
             <div className="title" style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>
               Status: {compileStatus}
             </div>
+          </div>
+        </div>
+      )}
+
+      {authorizationError && (
+        <div className="fg-alert-banner" role="alert" style={{ margin: '0 14px 14px' }}>
+          <div className="txt">
+            <div className="eyebrow">Notification not sent</div>
+            <div className="title" style={{ fontSize: 11 }}>{authorizationError}</div>
           </div>
         </div>
       )}
@@ -210,8 +231,12 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
         <div>
           <div className="fg-oversight-row">
             <span>Human oversight</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--mint)' }}>
-              ACTIVE <span className="fg-toggle-pill" />
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: humanOversight ? 'var(--mint)' : 'var(--text-faint)' }}>
+              {humanOversight ? 'ACTIVE' : 'INACTIVE'}
+              <span 
+                className={`fg-toggle-pill ${humanOversight ? '' : 'inactive'}`} 
+                onClick={() => setHumanOversight(!humanOversight)}
+              />
             </span>
           </div>
 
@@ -228,11 +253,11 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
           <button 
             className="fg-authorize-btn" 
             onClick={() => handleAuthorize(activeReport?.id || 'mock')} 
-            disabled={isSent || isCompiling}
+            disabled={isSent || isCompiling || isAuthorizing || !activeReport}
           >
             <Fingerprint size={18} />
             <span>
-              {isSent ? 'NOTIFICATION SENT' : 'AUTHORIZE NOTIFICATION'}
+              {isSent ? 'NOTIFICATION SENT' : (isAuthorizing ? 'SENDING NOTIFICATION...' : 'AUTHORIZE NOTIFICATION')}
               <small>Send evidence package · initiate enforcement protocols</small>
             </span>
           </button>

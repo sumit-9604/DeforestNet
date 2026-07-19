@@ -31,7 +31,10 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, risk_level: riskLevel })
     });
-    if (!response.ok) throw new Error('Failed to update alert status');
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || 'Failed to update alert status');
+    }
     return await response.json();
   },
 
@@ -41,8 +44,8 @@ export const apiService = {
     return await response.json();
   },
 
-  async triggerCheck(regionName = "Amazon Wildlife Reserve") {
-    const response = await fetch(`${BASE_URL}/alerts/trigger-check?region_name=${encodeURIComponent(regionName)}`, {
+  async triggerCheck(regionName = "Amazon Wildlife Reserve", humanOversight = true) {
+    const response = await fetch(`${BASE_URL}/alerts/trigger-check?region_name=${encodeURIComponent(regionName)}&human_oversight=${humanOversight}`, {
       method: 'POST'
     });
     if (!response.ok) throw new Error('Failed to trigger check');
