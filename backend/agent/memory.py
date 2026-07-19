@@ -1,4 +1,4 @@
-# Memory representation for the ForestGuard Agent
+# Memory representation for the DeForestNet Agent
 
 class AgentMemory:
     def __init__(self, region_name: str):

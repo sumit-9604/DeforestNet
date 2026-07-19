@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from backend.database.database import engine, Base, SessionLocal
 from backend.models.user import User
 from backend.models.alert import RegionOfInterest, Alert
+from backend.models.report import Report
 from backend.utils.logger import setup_logger
 
 logger = setup_logger("db_seed")
@@ -23,17 +24,17 @@ def seed_database(db: Session):
         logger.info("Seeding user accounts...")
         users = [
             User(
-                email="admin@forestguard.org",
+                email="admin@deforestnet.org",
                 password_hash=hash_password("admin123"),
                 role="Admin"
             ),
             User(
-                email="researcher@forestguard.org",
+                email="researcher@deforestnet.org",
                 password_hash=hash_password("researcher123"),
                 role="Researcher"
             ),
             User(
-                email="officer@forestguard.org",
+                email="officer@deforestnet.org",
                 password_hash=hash_password("officer123"),
                 role="Authority"
             )
@@ -75,12 +76,12 @@ def seed_database(db: Session):
             RegionOfInterest(
                 name="Amazon Wildlife Reserve",
                 geometry=json.dumps(amazon_geom),
-                contact_email="amazon-officer@forestguard.org"
+                contact_email="amazon-officer@deforestnet.org"
             ),
             RegionOfInterest(
                 name="Kalimantan Protected Forest",
                 geometry=json.dumps(kalimantan_geom),
-                contact_email="kalimantan-officer@forestguard.org"
+                contact_email="kalimantan-officer@deforestnet.org"
             )
         ]
         db.add_all(regions)

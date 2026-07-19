@@ -24,7 +24,7 @@ class ReportGeneratorService:
             str: Path to the generated PDF report.
         """
         try:
-            report_id = f"FG_REPORT_{alert_db_model.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+            report_id = f"DFN_REPORT_{alert_db_model.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
             pdf_path = REPORTS_DIR / f"{report_id}.pdf"
             
             logger.info(f"Generating PDF report at: {pdf_path}")
@@ -100,7 +100,7 @@ class ReportGeneratorService:
 
             # 3. Header Banner Table
             header_data = [
-                [Paragraph("FORESTGUARD INCIDENT EVIDENCE REPORT", title_style)],
+                [Paragraph("DEFORESTNET INCIDENT EVIDENCE REPORT", title_style)],
                 [Paragraph(f"RISK RATING: {risk_level} &nbsp;|&nbsp; STATUS: UNRESOLVED &nbsp;|&nbsp; ID: {report_id}", ParagraphStyle('Sub', parent=title_style, fontSize=10))]
             ]
             header_table = Table(header_data, colWidths=[530])

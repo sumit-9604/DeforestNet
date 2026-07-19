@@ -1,4 +1,4 @@
--- Database schema for ForestGuard
+-- Database schema for DeForestNet
 
 -- Table: users
 CREATE TABLE IF NOT EXISTS users (

@@ -30,7 +30,7 @@ class NotificationService:
             receipt_path = pdf_path.replace(".pdf", "_dispatch_receipt.txt")
             try:
                 with open(receipt_path, "w") as f:
-                    f.write(f"--- FORESTGUARD REPORT ROUTING RECEIPT ---\n")
+                    f.write(f"--- DEFORESTNET REPORT ROUTING RECEIPT ---\n")
                     f.write(f"Alert ID: {alert_id}\n")
                     f.write(f"Recipient Authority: {recipient_email}\n")
                     f.write(f"Attachment: {os.path.basename(pdf_path)}\n")
@@ -48,18 +48,18 @@ class NotificationService:
             msg = MIMEMultipart()
             msg["From"] = SENDER_EMAIL
             msg["To"] = recipient_email
-            msg["Subject"] = f"FORESTGUARD ALERT: Deforestation Detected (Alert ID: {alert_id})"
+            msg["Subject"] = f"DEFORESTNET ALERT: Deforestation Detected (Alert ID: {alert_id})"
             
             body = (
                 f"Dear Officer,\n\n"
-                f"This is an automated alerts notification from the ForestGuard Deforestation Detection & Reporting system.\n\n"
+                f"This is an automated alerts notification from the DeForestNet Deforestation Detection & Reporting system.\n\n"
                 f"A deforestation event has been detected and verified at your jurisdiction's monitored coordinates. "
                 f"Please review the attached PDF report for full coordinates, NDVI evidence curves, and AI risk analysis.\n\n"
                 f"Details:\n"
                 f"- System ID: alert_{alert_id}\n"
                 f"- Severity: Check Attached PDF\n\n"
                 f"Sincerely,\n"
-                f"ForestGuard Agent\n"
+                f"DeForestNet Agent\n"
                 f"SDG 13 & SDG 15 Monitoring Initiative\n"
             )
             msg.attach(MIMEText(body, "plain"))

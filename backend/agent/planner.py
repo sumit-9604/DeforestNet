@@ -1,4 +1,4 @@
-# Planner for the ForestGuard Agent
+# Planner for the DeForestNet Agent
 
 import json
 import requests
@@ -17,17 +17,33 @@ class AgentPlanner:
         self.provider = LLM_PROVIDER
         self.reasoning_service = LLMReasoningService()
 
-    def decide_next_step(self, memory, db=None) -> dict:
+    def decide_next_step(self, memory, db=None, human_oversight: bool = True) -> dict:
         """
         Determines the next tool to run based on memory context.
         Uses LLM (Gemini/Claude) or the rule-based state machine in mock mode.
         """
-        logger.info(f"Planner decision requested. Provider: {self.provider}")
+        logger.info(f"Planner decision requested. Provider: {self.provider}. Human oversight: {human_oversight}")
         
         if self.provider == "mock":
-            return self._decide_mock_state_machine(memory, db)
+            decision = self._decide_mock_state_machine(memory, db)
         else:
+<<<<<<< Updated upstream
             return self._decide_llm(memory, db)
+=======
+            decision = self._decide_llm(memory, db)
+            
+        # Intercept and block notification tool if human oversight is active
+        if decision and decision.get("tool") == "NotificationTool" and human_oversight:
+            logger.info("Human oversight is active. Intercepting NotificationTool execution.")
+            return {
+                "tool": None,
+                "parameters": {},
+                "reasoning": "Report compiled. Human oversight is active, pausing for manual authorization.",
+                "finished": True
+            }
+            
+        return decision
+>>>>>>> Stashed changes
 
     def _decide_mock_state_machine(self, memory, db) -> dict:
         """Deterministic state machine implementing the exact workflow of the PRD"""
@@ -339,7 +355,7 @@ class AgentPlanner:
             if not create_report_logs:
                 # Find recipient email from region
                 region = db.query(RegionOfInterest).filter(RegionOfInterest.name == region_name).first()
-                contact_email = region.contact_email if region else "alerts@forestguard.org"
+                contact_email = region.contact_email if region else "alerts@deforestnet.org"
                 alert["recipient_email"] = contact_email
                 
                 return {
@@ -458,10 +474,17 @@ class AgentPlanner:
 
         if not response_text:
             logger.warning("LLM API failed. Falling back to rule-based state machine.")
+<<<<<<< Updated upstream
             # For runtime robustness, fallback to mock state machine
             if db is not None:
                 return self._decide_mock_state_machine(memory, db)
             return {"error": "LLM planning call failed and no database context provided for fallback."}
+=======
+            if db is not None:
+                return self._decide_mock_state_machine(memory, db)
+            else:
+                return {"error": "LLM planning call failed and no database context provided for fallback."}
+>>>>>>> Stashed changes
 
         try:
             return self._parse_llm_json(response_text)

@@ -1,4 +1,4 @@
-# Tool definitions for the ForestGuard Agentic Layer
+# Tool definitions for the DeForestNet Agentic Layer
 
 import os
 import json

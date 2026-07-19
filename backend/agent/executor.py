@@ -1,4 +1,4 @@
-# Executor for the ForestGuard Agent
+# Executor for the DeForestNet Agent
 
 from backend.agent.tools import (
     GetForestAlertsTool,

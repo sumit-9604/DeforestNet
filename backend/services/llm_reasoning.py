@@ -34,7 +34,7 @@ class LLMReasoningService:
 
     def _construct_prompt(self, data: dict) -> str:
         return f"""
-You are the reasoning core of ForestGuard, an AI agent monitoring illegal logging and deforestation.
+You are the reasoning core of DeForestNet, an AI agent monitoring illegal logging and deforestation.
 Analyze this deforestation alert and output your assessment strictly as a JSON object.
 
 Alert Data:

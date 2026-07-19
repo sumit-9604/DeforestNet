@@ -54,56 +54,49 @@ def update_alert_status(alert_id: int, payload: AlertUpdateStatus, db: Session =
     alert = db.query(Alert).filter(Alert.id == alert_id).first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
-        
-    alert.status = payload.status
+
     if payload.risk_level:
         alert.risk_level = payload.risk_level
-        
-    # Trigger real email/receipt notifications upon manual authorization
+
+    # Authorization is a report-delivery action, not an alert state of its own.
+    # Persist both records so the Reports UI remains correct after a refresh.
     if payload.status in ["Authorized", "Reported"]:
-        report = db.query(Report).filter(Report.alert_id == alert.id).first()
-        if report:
-            import os
-            from backend.config import REPORTS_DIR
-            notifier = NotificationService()
-            pdf_path = report.file_path
-            
-            # Resolve cross-platform paths dynamically (Windows -> macOS path format)
-            if not os.path.exists(pdf_path):
-                filename = os.path.basename(pdf_path.replace("\\", "/"))
-                local_path = REPORTS_DIR / filename
-                if local_path.exists():
-                    pdf_path = str(local_path)
-            
-            sent = notifier.send_report_notification(
-                recipient_email=report.recipient_email,
-                alert_id=alert.id,
-                pdf_path=pdf_path
-            )
-            if sent:
-                alert.status = "Reported"
-        
+        report = db.query(Report).filter(Report.alert_id == alert.id).order_by(Report.generated_at.desc()).first()
+        if not report:
+            raise HTTPException(status_code=409, detail="No evidence report exists for this alert")
+
+        import os
+        from backend.config import REPORTS_DIR
+
+        pdf_path = report.file_path
+        # Resolve report paths created on another operating system.
+        if not os.path.exists(pdf_path):
+            filename = os.path.basename(pdf_path.replace("\\", "/"))
+            local_path = REPORTS_DIR / filename
+            if local_path.exists():
+                pdf_path = str(local_path)
+
+        notifier = NotificationService()
+        sent = notifier.send_report_notification(
+            recipient_email=report.recipient_email,
+            alert_id=alert.id,
+            pdf_path=pdf_path
+        )
+        report.status = "Sent" if sent else "Failed"
+        alert.status = "Reported" if sent else "Verified"
+    else:
+        alert.status = payload.status
+
     db.commit()
     db.refresh(alert)
     return alert
 
 @router.post("/trigger-check")
-def trigger_agent_check(region_name: str = "Amazon Wildlife Reserve", db: Session = Depends(get_db)):
+def trigger_agent_check(region_name: str = "Amazon Wildlife Reserve", human_oversight: bool = True, db: Session = Depends(get_db)):
     """
     Triggers the autonomous agent pipeline for a Region of Interest.
-    Steps:
-      1. Query region from database (fallback to auto-creating it if not seeded)
-      2. Ingest alerts from GFW API / Simulation
-      3. For each alert, check for duplicates:
-         - Calculate NDVI changes on satellite imagery
-         - Enrich context with protected area bounds & clustering
-         - Invoke LLM Reasoning for risk rating & narrative
-         - Generate comparative image grids
-         - Compile PDF report
-         - Route dispatch to authority contact
-         - Persist status updates in database
     """
-    logger.info(f"Manual trigger received for pipeline check in region: {region_name}")
+    logger.info(f"Manual trigger received for pipeline check in region: {region_name} (Human oversight: {human_oversight})")
     
     # 1. Fetch Region
     region = db.query(RegionOfInterest).filter(RegionOfInterest.name == region_name).first()
@@ -115,7 +108,7 @@ def trigger_agent_check(region_name: str = "Amazon Wildlife Reserve", db: Sessio
             email = "amazon-alerts@conservation.org"
         else:
             geom = '{"type": "Polygon", "coordinates": [[[116.8, -1.35], [117.0, -1.35], [117.0, -1.15], [116.8, -1.15], [116.8, -1.35]]]}'
-            email = "kalimantan-office@forestguard.org"
+            email = "kalimantan-office@deforestnet.org"
             
         region = RegionOfInterest(name=region_name, geometry=geom, contact_email=email)
         db.add(region)
@@ -123,11 +116,11 @@ def trigger_agent_check(region_name: str = "Amazon Wildlife Reserve", db: Sessio
         db.refresh(region)
 
     # 2. Instantiate and run autonomous agent
-    from backend.agent.agent import ForestGuardAgent
+    from backend.agent.agent import DeForestNetAgent
     
     try:
-        agent = ForestGuardAgent()
-        metrics = agent.run(region_name, db)
+        agent = DeForestNetAgent()
+        metrics = agent.run(region_name, db, human_oversight=human_oversight)
         
         return {
             "status": "Success",

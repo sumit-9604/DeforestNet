@@ -2,16 +2,23 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from .env file if it exists
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent
+env_path = BASE_DIR.parent / '.env'
+
+# Load environment variables from .env file if it exists
+load_dotenv(dotenv_path=env_path, override=True)
 
 # Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./forest_guard.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./deforest_net.db")
 
 # Operations Mode
 SIMULATION_MODE = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
+
+# Continuous monitoring. Set AGENT_SCHEDULER_ENABLED=false to run checks manually only.
+AGENT_SCHEDULER_ENABLED = os.getenv("AGENT_SCHEDULER_ENABLED", "True").lower() in ("true", "1", "yes")
+AGENT_RUN_ON_STARTUP = os.getenv("AGENT_RUN_ON_STARTUP", "True").lower() in ("true", "1", "yes")
+AGENT_HUMAN_OVERSIGHT = os.getenv("AGENT_HUMAN_OVERSIGHT", "True").lower() in ("true", "1", "yes")
+AGENT_SCAN_INTERVAL_SECONDS = max(60, int(os.getenv("AGENT_SCAN_INTERVAL_SECONDS", "3600")))
 
 # LLM Configurations
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "mock")  # Options: 'gemini', 'claude', 'mock'
@@ -28,7 +35,7 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SENDER_EMAIL = os.getenv("SENDER_EMAIL", "noreply@forestguard.org")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL", "noreply@deforestnet.org")
 
 # Security
 SECRET_KEY = os.getenv("SECRET_KEY", "forest-guard-super-secret-key-change-in-prod")
