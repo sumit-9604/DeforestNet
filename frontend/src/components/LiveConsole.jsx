@@ -23,7 +23,13 @@ export default function LiveConsole({ lines }) {
       prevLinesRef.current = lines;
     } else {
       const initialLogs = LOG_POOL.slice(0, 4).map(l => {
-        const time = new Date().toTimeString().slice(0, 8);
+        const time = new Date().toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZone: 'Asia/Kolkata'
+        });
         return `${time} - ${l}`;
       });
       setLog(initialLogs);
@@ -48,7 +54,13 @@ export default function LiveConsole({ lines }) {
     const iv = setInterval(() => {
       setLog((prev) => {
         const next = LOG_POOL[Math.floor(Math.random() * LOG_POOL.length)];
-        const time = new Date().toTimeString().slice(0, 8);
+        const time = new Date().toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZone: 'Asia/Kolkata'
+        });
         return [...prev.slice(-19), `${time} - ${next}`];
       });
     }, 3000);

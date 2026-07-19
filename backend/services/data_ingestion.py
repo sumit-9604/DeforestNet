@@ -93,7 +93,7 @@ class DataIngestionService:
             confidence = "high" if "high" in confidences else "nominal"
 
             dates = [p.get("date") for p in cluster_pixels if p.get("date")]
-            latest_date = max(dates) if dates else datetime.now().isoformat()
+            latest_date = max(dates) if dates else datetime.utcnow().isoformat() + "Z"
 
             alerts.append({
                 "latitude": centroid_lat,
@@ -138,7 +138,7 @@ class DataIngestionService:
                     "longitude": lon,
                     "area_ha": area,
                     "confidence": confidence,
-                    "detected_at": (datetime.now() - timedelta(days=random.randint(1, 7))).isoformat(),
+                    "detected_at": (datetime.utcnow() - timedelta(days=random.randint(1, 7))).isoformat() + "Z",
                     "details": json.dumps({
                         "satellite": "Sentinel-2",
                         "cloud_cover_percent": round(random.uniform(0.0, 15.0), 1),
@@ -267,7 +267,7 @@ class DataIngestionService:
                     db.close()
 
                 if not detected_at:
-                    detected_at = datetime.now()
+                    detected_at = datetime.utcnow()
 
                 # 2. Define before and after date ranges
                 before_from = (detected_at - timedelta(days=45)).strftime("%Y-%m-%dT00:00:00Z")

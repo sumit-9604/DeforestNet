@@ -206,7 +206,17 @@ export default function Dashboard({ alerts = [], stats = null, activity = [] }) 
         {tasks.map((t) => <TaskCard key={t.id} task={t} />)}
       </div>
 
-      <LiveConsole lines={activity.map(a => `${a.timestamp.slice(11, 19)} - ${a.message}`)} />
+      <LiveConsole lines={activity.map(a => {
+        const utcStr = a.timestamp.endsWith('Z') ? a.timestamp : a.timestamp + 'Z';
+        const time = new Date(utcStr).toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZone: 'Asia/Kolkata'
+        });
+        return `${time} - ${a.message}`;
+      })} />
     </div>
   );
 }

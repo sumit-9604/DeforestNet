@@ -218,14 +218,27 @@ class DatabaseTool(BaseTool):
             return {"exists": False}
             
         elif operation == "create_alert":
+            from datetime import datetime
+            from sqlalchemy import func
             lat = params.get("latitude")
             lon = params.get("longitude")
             area_ha = params.get("area_ha")
             details = params.get("details", "")
             region_name = params.get("region_name", "Amazon Wildlife Reserve")
+            detected_at_str = params.get("detected_at")
             
             region = db.query(RegionOfInterest).filter(RegionOfInterest.name == region_name).first()
             region_id = region.id if region else None
+            
+            detected_at_val = None
+            if detected_at_str:
+                if isinstance(detected_at_str, str):
+                    try:
+                        if detected_at_str.endswith('Z'):
+                            detected_at_str = detected_at_str[:-1]
+                        detected_at_val = datetime.fromisoformat(detected_at_str)
+                    except ValueError:
+                        pass
             
             alert = Alert(
                 region_id=region_id,
@@ -233,7 +246,8 @@ class DatabaseTool(BaseTool):
                 longitude=lon,
                 area_ha=area_ha,
                 status="Pending",
-                details=details
+                details=details,
+                detected_at=detected_at_val if detected_at_val else func.now()
             )
             db.add(alert)
             db.commit()

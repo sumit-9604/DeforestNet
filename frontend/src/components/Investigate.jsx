@@ -4,12 +4,12 @@ import RingProgress from './RingProgress.jsx';
 import { apiService } from '../services/api.js';
 
 const CASES = [
-  { id: 1, sector: 'Sector 4-X', time: '3:30 PM', status: 'detected', confidence: 98 },
-  { id: 2, sector: 'Sector 7-G', time: '3:40 PM', status: 'detected', confidence: 91 },
-  { id: 3, sector: 'Sector 2-C', time: '5:30 PM', status: 'pending', confidence: 64 },
-  { id: 4, sector: 'Sector 9-K', time: '3:30 AM', status: 'detected', confidence: 87 },
-  { id: 5, sector: 'Sector 1-A', time: '3:53 AM', status: 'pending', confidence: 55 },
-  { id: 6, sector: 'Sector 5-M', time: '3:39 PM', status: 'detected', confidence: 94 },
+  { id: 1, sector: 'Sector 4-X', time: '09:00 PM IST', status: 'detected', confidence: 98 },
+  { id: 2, sector: 'Sector 7-G', time: '09:10 PM IST', status: 'detected', confidence: 91 },
+  { id: 3, sector: 'Sector 2-C', time: '11:00 PM IST', status: 'pending', confidence: 64 },
+  { id: 4, sector: 'Sector 9-K', time: '09:00 AM IST', status: 'detected', confidence: 87 },
+  { id: 5, sector: 'Sector 1-A', time: '09:23 AM IST', status: 'pending', confidence: 55 },
+  { id: 6, sector: 'Sector 5-M', time: '09:09 PM IST', status: 'detected', confidence: 94 },
 ];
 
 function CaseModal({ item, onClose }) {
@@ -146,7 +146,7 @@ export default function Investigate({ alerts = [] }) {
         return {
           id: a.id,
           sector: `Sector ${a.id} (${a.latitude.toFixed(3)}, ${a.longitude.toFixed(3)})`,
-          time: new Date(a.detected_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: new Date(a.detected_at.endsWith('Z') ? a.detected_at : a.detected_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST',
           status: a.status.toLowerCase(),
           confidence,
           rawAlert: a,

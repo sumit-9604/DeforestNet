@@ -24,7 +24,7 @@ class ReportGeneratorService:
             str: Path to the generated PDF report.
         """
         try:
-            report_id = f"FG_REPORT_{alert_db_model.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            report_id = f"FG_REPORT_{alert_db_model.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
             pdf_path = REPORTS_DIR / f"{report_id}.pdf"
             
             logger.info(f"Generating PDF report at: {pdf_path}")

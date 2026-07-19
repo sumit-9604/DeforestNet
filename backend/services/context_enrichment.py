@@ -36,7 +36,7 @@ class ContextEnrichmentService:
         lat_tolerance = 0.01
         lon_tolerance = 0.01
         
-        thirty_days_ago = datetime.now() - timedelta(days=30)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         
         try:
             # Find neighboring alerts in the database
