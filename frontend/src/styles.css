@@ -598,8 +598,37 @@ button { font-family: inherit; cursor: pointer; }
 .fg-recipient-row svg.check { color: var(--mint); }
 
 .fg-oversight-row { display: flex; align-items: center; justify-content: space-between; margin: 0 14px 14px; padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-ui); font-size: 13px; color: var(--text); }
-.fg-toggle-pill { width: 38px; height: 20px; border-radius: 12px; background: var(--mint-dim); border: 1px solid var(--mint); position: relative; }
-.fg-toggle-pill::after { content: ""; position: absolute; top: 1px; right: 1px; width: 16px; height: 16px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 8px var(--mint); }
+.fg-toggle-pill {
+  width: 38px;
+  height: 20px;
+  border-radius: 12px;
+  background: var(--mint-dim);
+  border: 1px solid var(--mint);
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+.fg-toggle-pill::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 19px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px var(--mint);
+  transition: left 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.fg-toggle-pill.inactive {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.fg-toggle-pill.inactive::after {
+  left: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: none;
+}
 
 .fg-authorize-btn {
   display: block;
@@ -617,6 +646,15 @@ button { font-family: inherit; cursor: pointer; }
   text-transform: uppercase;
   box-shadow: 0 0 30px -10px var(--mint-dim);
   display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all 0.2s;
+}
+.fg-authorize-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--text-faint);
+  box-shadow: none;
 }
 .fg-authorize-btn small { display: block; font-family: var(--font-body); font-weight: 400; font-size: 10px; letter-spacing: 0; color: var(--text-dim); margin-top: 2px; text-transform: none; }
 
@@ -632,6 +670,31 @@ button { font-family: inherit; cursor: pointer; }
   border: 1px solid var(--line-bright);
   aspect-ratio: 16 / 10;
 }
+.live-forest-map { min-height: 360px; }
+.leaflet-map { width: 100%; height: 100%; min-height: 360px; background: #0d1a18; }
+.live-forest-map .leaflet-control-layers {
+  background: rgba(4, 9, 10, 0.88);
+  border: 1px solid var(--line-bright);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+.live-forest-map .leaflet-control-layers-toggle { filter: invert(1); }
+.live-forest-map .leaflet-control-layers-expanded { padding: 8px 10px; }
+.live-forest-map .leaflet-popup-content-wrapper,
+.live-forest-map .leaflet-popup-tip {
+  background: var(--panel-raised);
+  color: var(--text);
+  border: 1px solid var(--line-bright);
+}
+.live-forest-map .leaflet-popup-content { margin: 10px 12px; }
+.dfn-map-popup { display: flex; flex-direction: column; gap: 3px; font-family: var(--font-mono); font-size: 11px; }
+.dfn-map-popup strong { color: var(--mint); font-family: var(--font-ui); }
+.live-map-status { pointer-events: none; }
+.live-map-status-card { padding: 8px 11px; border-left: 2px solid var(--mint); border-radius: 4px; }
+.live-map-status-title,
+.live-map-status-caption { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-dim); }
+.live-map-status-value { display: flex; align-items: center; gap: 5px; margin: 3px 0; font-family: var(--font-mono); font-size: 11px; }
 .dfn-map-svg { width: 100%; height: 100%; display: block; }
 
 .dfn-breach {

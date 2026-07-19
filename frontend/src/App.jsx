@@ -34,9 +34,9 @@ export default function App() {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
+  const loadData = async ({ showLoading = true } = {}) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const [alertsData, reportsData, statsData, activityData] = await Promise.all([
         apiService.getAlerts(),
         apiService.getReports(),
@@ -50,12 +50,14 @@ export default function App() {
     } catch (err) {
       console.error("Error loading live data from backend:", err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
+    const pollingInterval = setInterval(() => loadData({ showLoading: false }), 30000);
+    return () => clearInterval(pollingInterval);
   }, []);
 
   const Active = TABS.find((t) => t.key === tab).Comp;
