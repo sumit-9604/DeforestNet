@@ -496,11 +496,70 @@ DeforestNet closes this gap using an AI reasoning layer on top of existing satel
 
 ---
 
+## 13. Local Development & Setup
 
+### 13.1 Prerequisites
+- Python 3.9+
+- Node.js (v18+) and npm
 
-## 13. Conclusion
+### 13.2 Environment Setup
+Create a `.env` file inside the `backend/` directory based on the following configuration:
+```env
+# Operations Mode (Set to False to use live satellite imagery instead of simulated fallback)
+SIMULATION_MODE=False
 
+# Sentinel Hub API Credentials
+SENTINEL_HUB_CLIENT_ID=your_client_id
+SENTINEL_HUB_CLIENT_SECRET=your_client_secret
 
+# Planet API Key
+PLANET_API_KEY=your_planet_api_key
+
+# Global Forest Watch (GFW) API Key
+GFW_API_KEY=your_gfw_api_key
+
+# LLM Reasoning Configuration
+LLM_PROVIDER=gemini # Choose 'gemini', 'claude', or 'mock'
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+### 13.3 Running the Backend
+1. Initialize the virtual environment and activate it:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   ```
+2. Install the Python dependencies:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+3. Run the FastAPI development server:
+   ```bash
+   uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
+   ```
+   The backend API documentation will be available at `http://127.0.0.1:8000/docs`.
+
+### 13.4 Running the Frontend
+1. Navigate to the `frontend/` directory:
+   ```bash
+   cd frontend
+   ```
+2. Install the JavaScript packages:
+   ```bash
+   npm install
+   ```
+3. Launch the Vite development server:
+   ```bash
+   npm run dev
+   ```
+   The dashboard will be active at `http://localhost:3000`.
+
+### 13.5 Robust Fallback Design
+If the configured LLM API (such as the Gemini free-tier) hits quota rate limits (HTTP `429`), the planner automatically switches execution to a rule-based state machine (`_decide_mock_state_machine` in [planner.py](file:///Users/stone/DeforestNet/backend/agent/planner.py)) to ensure continuous verification and report generation.
+
+---
+
+## 14. Conclusion
 
 DeforestNet demonstrates how freely available satellite data, combined with an LLM-powered reasoning layer, can close the critical gap between raw environmental monitoring data and actionable, authority-ready intelligence. By automating detection, verification, and reporting, the agent directly supports SDG 13 (Climate Action) and SDG 15 (Life on Land), offering a scalable, low-cost solution deployable in any forest region worldwide — entirely using free and open-access data sources.
 
