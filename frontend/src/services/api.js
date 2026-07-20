@@ -62,5 +62,21 @@ export const apiService = {
 
   getAlertComparisonUrl(alertId) {
     return `${BASE_URL}/alerts/${alertId}/comparison`;
+  },
+
+  async getSettings() {
+    const response = await fetch(`${BASE_URL}/settings/`);
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return await response.json();
+  },
+
+  async updateSettings(simulationMode) {
+    const response = await fetch(`${BASE_URL}/settings/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ simulation_mode: simulationMode })
+    });
+    if (!response.ok) throw new Error('Failed to update settings');
+    return await response.json();
   }
 };

@@ -6,7 +6,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 from backend.config import (
-    SIMULATION_MODE,
+    state,
     SENTINEL_HUB_CLIENT_ID,
     SENTINEL_HUB_CLIENT_SECRET,
     PLANET_API_KEY,
@@ -23,8 +23,9 @@ CLUSTER_DISTANCE_THRESHOLD_M = 25
 
 
 class DataIngestionService:
-    def __init__(self):
-        self.simulation = SIMULATION_MODE
+    @property
+    def simulation(self):
+        return state.simulation_mode
 
     @staticmethod
     def _haversine_distance_m(lat1, lon1, lat2, lon2):

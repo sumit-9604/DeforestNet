@@ -12,7 +12,22 @@ load_dotenv(dotenv_path=env_path, override=True)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./deforest_net.db")
 
 # Operations Mode
-SIMULATION_MODE = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
+SIMULATION_MODE_ENV = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
+
+class AppConfigState:
+    def __init__(self):
+        self._simulation_mode = SIMULATION_MODE_ENV
+
+    @property
+    def simulation_mode(self) -> bool:
+        return self._simulation_mode
+
+    @simulation_mode.setter
+    def simulation_mode(self, val: bool):
+        self._simulation_mode = val
+
+state = AppConfigState()
+SIMULATION_MODE = SIMULATION_MODE_ENV
 
 # Continuous monitoring. Set AGENT_SCHEDULER_ENABLED=false to run checks manually only.
 AGENT_SCHEDULER_ENABLED = os.getenv("AGENT_SCHEDULER_ENABLED", "True").lower() in ("true", "1", "yes")
