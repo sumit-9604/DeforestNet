@@ -157,30 +157,66 @@ export default function Reports({ reports = [], alerts = [], onRefresh }) {
       {/* Reports List / Navigator if multiple exist */}
       {reports.length > 1 && (
         <div style={{ display: 'flex', gap: 6, margin: '0 14px 10px', overflowX: 'auto', paddingBottom: 4 }}>
-          {reports.map((r, idx) => (
-            <button
-              key={r.id}
-              onClick={() => setActiveReportIdx(idx)}
-              className="mono"
-              style={{
-                background: activeReportIdx === idx ? 'var(--panel-raised)' : 'transparent',
-                border: `1px solid ${activeReportIdx === idx ? 'var(--line-bright)' : 'var(--line)'}`,
-                padding: '4px 8px',
-                fontSize: 9,
-                borderRadius: 4,
-                color: activeReportIdx === idx ? 'var(--mint)' : 'var(--text-dim)',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Report #{r.id}
-            </button>
-          ))}
+          {reports.map((r, idx) => {
+            const associatedAlert = alerts.find(a => a.id === r.alert_id) || {};
+            const alertDetails = typeof associatedAlert.details === 'string' ? JSON.parse(associatedAlert.details) : (associatedAlert.details || {});
+            const isSim = alertDetails?.simulated || alertDetails?.source === 'Simulation Generator';
+            return (
+              <button
+                key={r.id}
+                onClick={() => setActiveReportIdx(idx)}
+                className="mono"
+                style={{
+                  background: activeReportIdx === idx ? 'var(--panel-raised)' : 'transparent',
+                  border: `1px solid ${activeReportIdx === idx ? 'var(--line-bright)' : 'var(--line)'}`,
+                  padding: '4px 8px',
+                  fontSize: 9,
+                  borderRadius: 4,
+                  color: activeReportIdx === idx ? 'var(--mint)' : 'var(--text-dim)',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <span>Report #{r.id}</span>
+                <span style={{
+                  fontSize: 8,
+                  opacity: 0.8,
+                  color: isSim ? 'var(--amber)' : 'var(--mint)'
+                }}>
+                  ({isSim ? 'SIM' : 'LIVE'})
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
       <div className="fg-grid-2">
         <div className="fg-report-doc">
-          <h3>{reportDetails.incidentId}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>{reportDetails.incidentId}</h3>
+            {(() => {
+              const associatedAlert = alerts.find(a => a.id === activeReport?.alert_id) || {};
+              const alertDetails = typeof associatedAlert.details === 'string' ? JSON.parse(associatedAlert.details) : (associatedAlert.details || {});
+              const isSim = alertDetails?.simulated || alertDetails?.source === 'Simulation Generator';
+              return (
+                <span style={{
+                  background: isSim ? 'rgba(255, 179, 176, 0.1)' : 'rgba(145, 255, 226, 0.1)',
+                  border: `1px solid ${isSim ? 'var(--amber)' : 'var(--mint)'}`,
+                  color: isSim ? 'var(--amber)' : 'var(--mint)',
+                  fontSize: 9,
+                  padding: '2px 6px',
+                  borderRadius: 4,
+                  fontWeight: 'bold',
+                  fontFamily: 'var(--font-mono)'
+                }}>
+                  {isSim ? 'SIMULATED DATA' : 'LIVE DATA'}
+                </span>
+              );
+            })()}
+          </div>
           <div className="meta">
             <span>{reportDetails.location}</span>
             <span>AI AGENT: {reportDetails.agentName}</span>
