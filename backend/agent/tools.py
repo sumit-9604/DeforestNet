@@ -215,6 +215,19 @@ class DatabaseTool(BaseTool):
             ).first()
             if exists:
                 return {"exists": True, "alert_id": exists.id}
+                
+            # Cooldown logic: skip re-evaluating false positives within 24 hours
+            from datetime import datetime, timedelta
+            cooldown_limit = datetime.now() - timedelta(hours=24)
+            recent_fp = db.query(Alert).filter(
+                Alert.latitude.between(lat - 0.001, lat + 0.001),
+                Alert.longitude.between(lon - 0.001, lon + 0.001),
+                Alert.status == "False Positive",
+                Alert.detected_at >= cooldown_limit
+            ).first()
+            if recent_fp:
+                return {"exists": True, "alert_id": recent_fp.id}
+                
             return {"exists": False}
             
         elif operation == "create_alert":

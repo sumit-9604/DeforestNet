@@ -1,4 +1,5 @@
 import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -13,10 +14,21 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./deforest_net.db")
 
 # Operations Mode
 SIMULATION_MODE_ENV = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
+SETTINGS_FILE = Path("/Users/stone/DeforestNet/backend/storage/settings.json")
 
 class AppConfigState:
     def __init__(self):
-        self._simulation_mode = SIMULATION_MODE_ENV
+        self._simulation_mode = self._load_simulation_mode()
+
+    def _load_simulation_mode(self) -> bool:
+        if SETTINGS_FILE.exists():
+            try:
+                with open(SETTINGS_FILE, "r") as f:
+                    data = json.load(f)
+                    return data.get("simulation_mode", SIMULATION_MODE_ENV)
+            except Exception:
+                pass
+        return SIMULATION_MODE_ENV
 
     @property
     def simulation_mode(self) -> bool:
@@ -25,6 +37,12 @@ class AppConfigState:
     @simulation_mode.setter
     def simulation_mode(self, val: bool):
         self._simulation_mode = val
+        try:
+            SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(SETTINGS_FILE, "w") as f:
+                json.dump({"simulation_mode": val}, f)
+        except Exception:
+            pass
 
 state = AppConfigState()
 SIMULATION_MODE = SIMULATION_MODE_ENV
