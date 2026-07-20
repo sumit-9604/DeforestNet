@@ -16,3 +16,4 @@ python-dotenv
 sqlalchemy
 email-validator
 jinja2
+psycopg2-binary

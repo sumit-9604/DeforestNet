@@ -11,6 +11,8 @@ load_dotenv(dotenv_path=env_path, override=True)
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./deforest_net.db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Operations Mode
 SIMULATION_MODE_ENV = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
