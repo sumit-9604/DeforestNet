@@ -1,0 +1,6 @@
+--- DEFORESTNET REPORT ROUTING RECEIPT ---
+Alert ID: 1
+Recipient Authority: amazon-officer@deforestnet.org
+Attachment: DFN_REPORT_1_20260720_160734.pdf
+Dispatch Mode: Simulation (Local Write)
+Timestamp: 2026-07-11 (Sent Successfully)

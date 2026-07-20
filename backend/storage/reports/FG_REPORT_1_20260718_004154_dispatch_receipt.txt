@@ -1,6 +1,0 @@
---- FORESTGUARD REPORT ROUTING RECEIPT ---
-Alert ID: 1
-Recipient Authority: amazon-officer@forestguard.org
-Attachment: FG_REPORT_1_20260718_004154.pdf
-Dispatch Mode: Simulation (Local Write)
-Timestamp: 2026-07-11 (Sent Successfully)
