@@ -75,6 +75,11 @@ def update_alert_status(alert_id: int, payload: AlertUpdateStatus, db: Session =
             local_path = REPORTS_DIR / filename
             if local_path.exists():
                 pdf_path = str(local_path)
+            else:
+                from backend.config import BASE_DIR
+                repo_path = BASE_DIR / "storage" / "reports" / filename
+                if repo_path.exists():
+                    pdf_path = str(repo_path)
 
         notifier = NotificationService()
         sent = notifier.send_report_notification(

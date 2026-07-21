@@ -26,15 +26,20 @@ def download_pdf_report(report_id: int, db: Session = Depends(get_db)):
         
     pdf_path = report.file_path
     
-    # Check if file exists locally. If not, resolve the file's basename inside the local REPORTS_DIR
+    # Check if file exists locally. If not, resolve the file's basename inside the local REPORTS_DIR or repository folder
     if not os.path.exists(pdf_path):
         filename = os.path.basename(pdf_path.replace("\\", "/"))
         local_path = REPORTS_DIR / filename
         if local_path.exists():
             pdf_path = str(local_path)
         else:
-            logger.error(f"Report file missing on disk: {pdf_path} (Also checked local fallback: {local_path})")
-            raise HTTPException(status_code=404, detail="PDF report file does not exist on disk")
+            from backend.config import BASE_DIR
+            repo_path = BASE_DIR / "storage" / "reports" / filename
+            if repo_path.exists():
+                pdf_path = str(repo_path)
+            else:
+                logger.error(f"Report file missing on disk: {pdf_path} (Checked local fallback: {local_path} and repository fallback: {repo_path})")
+                raise HTTPException(status_code=404, detail="PDF report file does not exist on disk")
         
     # Return FileResponse to trigger browser download/preview
     filename = os.path.basename(pdf_path)
