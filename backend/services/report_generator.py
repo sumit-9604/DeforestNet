@@ -11,7 +11,7 @@ from backend.utils.logger import setup_logger
 logger = setup_logger("report_generator")
 
 class ReportGeneratorService:
-    def generate_pdf_report(self, alert_db_model, analysis_result: dict, comparison_image_path: str) -> str:
+    def generate_pdf_report(self, alert_db_model, analysis_result: dict, comparison_image_path: str, custom_filename: str = None) -> str:
         """
         Generates a professional PDF evidence report for a deforestation alert.
         
@@ -19,13 +19,18 @@ class ReportGeneratorService:
             alert_db_model: The Alert database record.
             analysis_result (dict): The result from LLM reasoning.
             comparison_image_path (str): Path to the 4-panel comparison PNG.
+            custom_filename (str): Optional filename to save the report to.
             
         Returns:
             str: Path to the generated PDF report.
         """
         try:
-            report_id = f"DFN_REPORT_{alert_db_model.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
-            pdf_path = REPORTS_DIR / f"{report_id}.pdf"
+            if custom_filename:
+                pdf_path = REPORTS_DIR / custom_filename
+                report_id = custom_filename.replace(".pdf", "")
+            else:
+                report_id = f"DFN_REPORT_{alert_db_model.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+                pdf_path = REPORTS_DIR / f"{report_id}.pdf"
             
             logger.info(f"Generating PDF report at: {pdf_path}")
             

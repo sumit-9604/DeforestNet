@@ -33,13 +33,36 @@ def download_pdf_report(report_id: int, db: Session = Depends(get_db)):
         if local_path.exists():
             pdf_path = str(local_path)
         else:
-            from backend.config import BASE_DIR
-            repo_path = BASE_DIR / "storage" / "reports" / filename
-            if repo_path.exists():
-                pdf_path = str(repo_path)
-            else:
-                logger.error(f"Report file missing on disk: {pdf_path} (Checked local fallback: {local_path} and repository fallback: {repo_path})")
-                raise HTTPException(status_code=404, detail="PDF report file does not exist on disk")
+            # Dynamically regenerate the PDF report if it's missing (e.g., due to ephemeral Render disk)
+            try:
+                logger.info(f"PDF report file missing on disk. Attempting to dynamically regenerate for report ID: {report_id} to path: {local_path}")
+                from backend.services.report_generator import ReportGeneratorService
+                import json
+                from backend.config import IMAGERY_DIR
+                
+                alert = report.alert
+                if not alert:
+                    raise ValueError("Alert associated with the report not found")
+                    
+                details = json.loads(alert.details) if alert.details else {}
+                protected_info = details.get("protected_info", {})
+                spatial_cluster = details.get("spatial_cluster", {})
+                
+                analysis_result = {
+                    "risk_level": alert.risk_level or "Medium",
+                    "narrative_summary": report.narrative_summary,
+                    "recommended_action": report.recommended_action,
+                    "is_protected": protected_info.get("is_protected", False),
+                    "protected_area_name": protected_info.get("name", ""),
+                    "neighboring_alerts_30d": spatial_cluster.get("neighboring_alerts_30d", 0)
+                }
+                
+                comp_img_path = str(IMAGERY_DIR / f"alert_{alert.id}" / "comparison.png")
+                reporter = ReportGeneratorService()
+                pdf_path = reporter.generate_pdf_report(alert, analysis_result, comp_img_path, custom_filename=filename)
+            except Exception as e:
+                logger.error(f"Failed to dynamically regenerate PDF report: {e}", exc_info=True)
+                raise HTTPException(status_code=404, detail="PDF report file does not exist on disk and regeneration failed")
         
     # Return FileResponse to trigger browser download/preview
     filename = os.path.basename(pdf_path)
