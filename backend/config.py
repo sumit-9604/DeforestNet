@@ -14,8 +14,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./deforest_net.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Operations Mode
-SIMULATION_MODE_ENV = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
+# Operations Mode (Defaults to False / Live Mode if unset)
+SIMULATION_MODE_ENV = os.getenv("SIMULATION_MODE", "False").lower() in ("true", "1", "yes")
 SETTINGS_FILE = Path("/Users/stone/DeforestNet/backend/storage/settings.json")
 
 class AppConfigState:

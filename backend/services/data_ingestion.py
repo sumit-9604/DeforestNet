@@ -196,11 +196,13 @@ class DataIngestionService:
 
                 # Note: correct endpoint requires /json suffix, uses "results" table, not "data"
                 url = "https://data-api.globalforestwatch.org/dataset/gfw_integrated_alerts/latest/query/json"
+                from datetime import datetime, timedelta
+                start_date = (datetime.utcnow() - timedelta(days=60)).strftime("%Y-%m-%d")
                 payload = {
                     "sql": (
                         "SELECT longitude, latitude, gfw_integrated_alerts__date, "
                         "gfw_integrated_alerts__intensity, gfw_integrated_alerts__confidence "
-                        "FROM results WHERE gfw_integrated_alerts__date >= '2026-06-01' AND gfw_integrated_alerts__confidence = 'high'"
+                        f"FROM results WHERE gfw_integrated_alerts__date >= '{start_date}' AND gfw_integrated_alerts__confidence = 'high'"
                     ),
                     "geometry": geometry
                 }
